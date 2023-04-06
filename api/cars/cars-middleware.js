@@ -43,7 +43,8 @@ const checkCarPayload = (req, res, next) => {
 
 // checkVinNumberValid returns a status 400 with a { message: "vin <vin number> is invalid" } if the vin number is invalid.
 const checkVinNumberValid = (req, res, next) => {
-  const { vin } = req.body;
+  let { vin } = req.body;
+  vin = vin.toString();
   if(vinValidator.validate(vin)) {
     next();
   } else {
@@ -52,12 +53,13 @@ const checkVinNumberValid = (req, res, next) => {
 }
 
 // checkVinNumberUnique returns a status 400 with a { message: "vin <vin number> already exists" } if the vin number already exists in the database.
-const checkVinNumberUnique = (req, res, next) => {
+const checkVinNumberUnique = async (req, res, next) => {
   const { vin } = req.body;
 
-  const carExists = db('cars').where('vin', vin).first();
+  const carExists = await db('cars').where('vin', vin).first();
+
   if(carExists) {
-    res.status(400).json(`vin ${vin} already exists`)
+    res.status(400).json({message: `vin ${vin} already exists`})
   } else {
     next();
   }
